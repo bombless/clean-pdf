@@ -19,3 +19,5 @@ definition module lexer
          | Bool Bool
 
 parse :: [Char] -> [Token]
+
+formatTokenList :: [Token] -> String
