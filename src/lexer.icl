@@ -3,16 +3,16 @@ implementation module lexer
 import StdEnv
 import lexer
 
-instance parse [Char] where
-    parse :: [Char] -> [Token]
-    parse _ = [Null]
+instance toTokens [Char] where
+    toTokens :: [Char] -> [Token]
+    toTokens _ = [Null]
 
-instance parse {#Char} where
-    parse :: {#Char} -> [Token]
-    parse x = parseFromList (fromString x)
+instance toTokens {#Char} where
+    toTokens :: {#Char} -> [Token]
+    toTokens x = parseFromList (fromString x)
     where
         parseFromList :: [Char] -> [Token]
-        parseFromList x = parse x
+        parseFromList x = toTokens x
 
 instance toString Token where
     toString (StringLiteral _) = "StringLiteral"
@@ -35,13 +35,16 @@ instance toString Token where
 
 formatTokenList :: [Token] -> String
 formatTokenList x = "[" +++ formatTokenListHelper x +++ "]"
-
-formatTokenListHelper :: [Token] -> String
-formatTokenListHelper [] = ""
-formatTokenListHelper [x] = toString x
-formatTokenListHelper [x:xs] = toString x +++ ", " +++ formatTokenListHelper xs
+where
+    formatTokenListHelper :: [Token] -> String
+    formatTokenListHelper [] = ""
+    formatTokenListHelper [x] = toString x
+    formatTokenListHelper [x:xs] = toString x +++ ", " +++ formatTokenListHelper xs
 
 instance == Token where
     (==) (StringLiteral a) (StringLiteral b) = a == b
-    (==) (Key a) (Key b) = a == b
+    (==) (Key a) (Key b)                     = a == b
+    (==) Null Null                           = True
+    (==) (Number a) (Number b)               = a == b
+    (==) _ _                                 = False
 

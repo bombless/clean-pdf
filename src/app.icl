@@ -11,7 +11,8 @@ Start world
     | ok
         # (output, world) = processFileByteByByte file [] world
         # console      = fwrites (toString (length output) +++ "\n") console
-        # console      = fwrites (formatTokenList (parse output) +++ "\n") console
+        # console      = fwrites (formatTokenList (toTokens output) +++ "\n") console
+        # console      = fwrites (toString (toTokens "1" <> [Number 1.0]) +++ "\n") console
         # console      = fwrites "done\n" console
         # (ok, world) = fclose console world
         | ok = world

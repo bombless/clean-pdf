@@ -16,3 +16,15 @@ build:
       - clm:
           main: app
           target: bin/app
+tests:
+  number:
+    script:
+      - clm:
+          main: number
+          target: Tests/output/number
+          src: [Tests]
+          print_constructors: false
+          print_time: false
+      - cd Tests/output
+      - ./number
+    expected_result: Tests/number.expected
