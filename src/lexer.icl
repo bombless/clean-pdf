@@ -3,8 +3,16 @@ implementation module lexer
 import StdEnv
 import lexer
 
-parse :: [Char] -> [Token]
-parse _ = [Null]
+instance parse [Char] where
+    parse :: [Char] -> [Token]
+    parse _ = [Null]
+
+instance parse {#Char} where
+    parse :: {#Char} -> [Token]
+    parse x = parseFromList (fromString x)
+    where
+        parseFromList :: [Char] -> [Token]
+        parseFromList x = parse x
 
 instance toString Token where
     toString (StringLiteral _) = "StringLiteral"
@@ -23,7 +31,7 @@ instance toString Token where
     toString Eof               = "Eof"
     toString (Id _)            = "Id"
     toString Null              = "Null"
-    toString (Bool b)            = "Bool(" +++ toString b +++ ")"
+    toString (Bool b)          = "Bool(" +++ toString b +++ ")"
 
 formatTokenList :: [Token] -> String
 formatTokenList x = "[" +++ formatTokenListHelper x +++ "]"
@@ -32,3 +40,8 @@ formatTokenListHelper :: [Token] -> String
 formatTokenListHelper [] = ""
 formatTokenListHelper [x] = toString x
 formatTokenListHelper [x:xs] = toString x +++ ", " +++ formatTokenListHelper xs
+
+instance == Token where
+    (==) (StringLiteral a) (StringLiteral b) = a == b
+    (==) (Key a) (Key b) = a == b
+

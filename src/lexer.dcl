@@ -18,6 +18,12 @@ definition module lexer
          | Null
          | Bool Bool
 
-parse :: [Char] -> [Token]
+class parse a :: a -> [Token]
+
+instance parse {#Char}
+
+instance parse [Char]
 
 formatTokenList :: [Token] -> String
+
+instance == Token
