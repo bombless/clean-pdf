@@ -5,7 +5,9 @@ import lexer
 
 instance toTokens [Char] where
     toTokens :: [Char] -> [Token]
-    toTokens _ = [Null]
+    toTokens []       = []
+    toTokens ['1':xs] = [Number 1.0: toTokens xs]
+    toTokens _        = [Null]
 
 instance toTokens {#Char} where
     toTokens :: {#Char} -> [Token]
@@ -26,7 +28,7 @@ instance toString Token where
     toString (ObjectStart _ _) = "ObjectStart"
     toString ObjectEnd         = "ObjectEnd"
     toString (Ref _ _)         = "Ref"
-    toString (Number _)        = "Number"
+    toString (Number n)        = "Number(" +++ toString n +++ ")"
     toString XRef              = "XRef"
     toString Eof               = "Eof"
     toString (Id _)            = "Id"
