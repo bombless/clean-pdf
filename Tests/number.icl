@@ -2,5 +2,6 @@ module number
 
 import lexer
 import StdEnv
+import helper
 
-Start = formatTokenList (toTokens "1")
+Start = multipleParses ["1", "0.905"]

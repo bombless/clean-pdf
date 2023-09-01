@@ -25,6 +25,5 @@ tests:
           src: [Tests]
           print_constructors: false
           print_time: false
-      - cd Tests/output
-      - ./number
+      - Tests/output/number
     expected_result: Tests/number.expected
