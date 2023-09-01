@@ -2,6 +2,7 @@ implementation module lexer
 
 import StdEnv
 import lexer
+import parseNumber
 
 instance toTokens [Char] where
     toTokens :: [Char] -> [Token]

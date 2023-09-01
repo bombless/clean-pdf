@@ -17,6 +17,16 @@ build:
           main: app
           target: bin/app
 tests:
+  parseNumberTest:
+    script:
+      - clm:
+          main: parseNumberTest
+          target: Tests/output/parseNumberTest
+          src: [Tests]
+          print_constructors: false
+          print_time: false
+      - Tests/output/parseNumberTest
+    expected_result: Tests/parseNumberTest.expected
   number:
     script:
       - clm:
