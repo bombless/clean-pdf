@@ -1,6 +1,5 @@
 definition module parseNumber
 
-:: ParseNumberResult = ParseNumberResultNone
-                     | ParseNumberResultOk Real [Char]
+import lexer
 
-parseNumber :: [Char] -> ParseNumberResult
+parseNumber :: [Char] -> (ParseResult Real)

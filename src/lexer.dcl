@@ -18,6 +18,10 @@ definition module lexer
          | Null
          | Bool Bool
 
+:: ParseResult a
+    = ParseOk a [Char]
+    | ParseFail [Char]
+
 class toTokens a :: a -> [Token]
 
 instance toTokens {#Char}
