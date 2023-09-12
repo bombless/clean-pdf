@@ -8,10 +8,24 @@ import parseNumber
 
 toTokensImpl :: [Char] -> (ParseResult Token)
 toTokensImpl stream =
-    tryParseNumber (parseNumber stream)
+    chainParsing stream
+        [
+            \stream -> tryParseNumber (parseNumber stream),
+            \['<':'<':xs] -> ParseOk DictStart xs
+        ]
 where
     tryParseNumber :: (ParseResult Real) -> (ParseResult Token)
     tryParseNumber (ParseOk rs left) = ParseOk (Number rs) left
+    chainParsing :: [Char] [[Char] -> (ParseResult Token)] -> (ParseResult Token)
+    chainParsing stream []     = ParseFail stream
+    chainParsing stream [x:xs] = handle (x stream) xs stream
+    where
+        handle :: (ParseResult Token) [[Char] -> (ParseResult Token)] [Char] -> (ParseResult Token)
+        handle (ParseOk rs left) _ _ = ParseOk rs left
+        handle (ParseFail left) [] stream = ParseFail stream
+        handle (ParseFail left) [x:xs] stream = handle (x stream) xs stream
+
+
 
 instance toTokens [Char] where
     toTokens :: [Char] -> [Token]
