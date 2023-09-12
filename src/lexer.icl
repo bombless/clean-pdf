@@ -4,11 +4,25 @@ import StdEnv
 import lexer
 import parseNumber
 
+:: Tokens
+    = TokensOk [Token] [Char]
+    | TokensFail [Char]
+
+toTokensImpl :: [Char] -> Tokens
+toTokensImpl stream =
+    tryParseNumber (parseNumber stream)
+where
+    tryParseNumber :: ParseNumberResult -> Tokens
+    tryParseNumber (ParseNumberResultOk rs left) = TokensOk [Number rs] left
+
 instance toTokens [Char] where
     toTokens :: [Char] -> [Token]
-    toTokens []       = []
-    toTokens ['1':xs] = [Number 1.0: toTokens xs]
-    toTokens _        = [Null]
+    toTokens []     = []
+    toTokens stream = handle (toTokensImpl stream)
+    where
+        handle :: Tokens -> [Token]
+        handle (TokensOk rs _) = rs
+
 
 instance toTokens {#Char} where
     toTokens :: {#Char} -> [Token]

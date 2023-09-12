@@ -8,11 +8,13 @@ where
     handle :: ParseNumberResult -> ParseNumberResult
     handle (ParseNumberResultOk n ['.':xs]) = parseAfterDot xs n
     handle (ParseNumberResultOk n xs) = ParseNumberResultOk n xs
+    handle x                          = x
 
 parseBeforeDot :: [Char] -> ParseNumberResult
 parseBeforeDot list = parseBeforeDotHelper list False 0.0
 where
     parseBeforeDotHelper :: [Char] Bool Real -> ParseNumberResult
+    parseBeforeDotHelper [] b acc = if b (ParseNumberResultOk acc []) ParseNumberResultNone
     parseBeforeDotHelper [x:xs] b acc
         | x >= '0' && x <= '9' = parseBeforeDotHelper xs True (acc * 10.0 + toReal (toInt (x - '0')))
         | otherwise = if b (ParseNumberResultOk acc [x:xs]) ParseNumberResultNone
