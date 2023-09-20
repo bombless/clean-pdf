@@ -4,18 +4,30 @@ import StdEnv
 import lexer
 import parseNumber
 
-
+:: Option a
+    = Some a
+    | None
 
 toTokensImpl :: [Char] -> (ParseResult Token)
 toTokensImpl stream =
     chainParsing stream
         [
             \stream -> tryParseNumber (parseNumber stream),
-            \['<':'<':xs] -> ParseOk DictStart xs
+            match (fromString "<<") DictStart,
+            match (fromString ">>") DictEnd,
+            match (fromString "[") ListStart,
+            match (fromString "]") ListEnd
         ]
 where
+    match :: [Char] Token -> ([Char] -> (ParseResult Token))
+    match x y = \z -> matchYes x y z
+    matchYes :: [Char] Token [Char] -> ParseResult Token
+    matchYes [] t xs         = ParseOk t xs
+    matchYes [x:xs] t [y:ys] = if (x == y) (matchYes xs t ys) (ParseFail [])
+
     tryParseNumber :: (ParseResult Real) -> (ParseResult Token)
     tryParseNumber (ParseOk rs left) = ParseOk (Number rs) left
+    tryParseNumber _                 = ParseFail []
     chainParsing :: [Char] [[Char] -> (ParseResult Token)] -> (ParseResult Token)
     chainParsing stream []     = ParseFail stream
     chainParsing stream [x:xs] = handle (x stream) xs stream
@@ -26,14 +38,14 @@ where
         handle (ParseFail left) [x:xs] stream = handle (x stream) xs stream
 
 
-
 instance toTokens [Char] where
     toTokens :: [Char] -> [Token]
     toTokens []     = []
     toTokens stream = handle (toTokensImpl stream)
     where
         handle :: (ParseResult Token) -> [Token]
-        handle (ParseOk rs _) = [rs]
+        handle (ParseOk rs []) = [rs]
+        handle (ParseOk rs xs) = [rs: handle (toTokensImpl xs)]
 
 
 instance toTokens {#Char} where

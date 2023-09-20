@@ -37,3 +37,13 @@ tests:
           print_time: false
       - Tests/output/number
     expected_result: Tests/number.expected
+  list:
+    script:
+      - clm:
+          main: list
+          target: Tests/output/list
+          src: [Tests]
+          print_constructors: false
+          print_time: false
+      - Tests/output/list
+    expected_result: Tests/list.expected
