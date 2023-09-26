@@ -13,14 +13,21 @@ toTokensImpl stream =
     chainParsing stream
         [
             \stream -> tryParseNumber (parseNumber stream),
-            match (fromString "<<") DictStart,
-            match (fromString ">>") DictEnd,
-            match (fromString "[") ListStart,
-            match (fromString "]") ListEnd
+            match "<<" DictStart,
+            match ">>" DictEnd,
+            match "[" ListStart,
+            match "]" ListEnd,
+            match "stream" StreamStart,
+            match "endstream" StreamEnd,
+            match "endobj" ObjectEnd,
+            match "xref" XRef,
+            match "null" Null,
+            match "true" (Bool True),
+            match "false" (Bool False)
         ]
 where
-    match :: [Char] Token -> ([Char] -> (ParseResult Token))
-    match x y = \z -> matchYes x y z
+    match :: {#Char} Token -> ([Char] -> (ParseResult Token))
+    match x y = \z -> matchYes (fromString x) y z
     matchYes :: [Char] Token [Char] -> ParseResult Token
     matchYes [] t xs         = ParseOk t xs
     matchYes [x:xs] t [y:ys] = if (x == y) (matchYes xs t ys) (ParseFail [])
@@ -29,13 +36,30 @@ where
     tryParseNumber (ParseOk rs left) = ParseOk (Number rs) left
     tryParseNumber _                 = ParseFail []
     chainParsing :: [Char] [[Char] -> (ParseResult Token)] -> (ParseResult Token)
-    chainParsing stream []     = ParseFail stream
-    chainParsing stream [x:xs] = handle (x stream) xs stream
+    chainParsing stream parsers = chainParsingHelper stream parsers parsers
+    chainParsingHelper :: [Char] [[Char] -> (ParseResult Token)] [[Char] -> (ParseResult Token)] -> (ParseResult Token)
+    chainParsingHelper stream [x:xs] origin
+        | x == ' '  = chainParsingHelper (filterComment stream) xs origin
+        | otherwise = handleChainParsingHelperResult (x (filterComment stream)) stream xs origin
     where
-        handle :: (ParseResult Token) [[Char] -> (ParseResult Token)] [Char] -> (ParseResult Token)
-        handle (ParseOk rs left) _ _ = ParseOk rs left
-        handle (ParseFail left) [] stream = ParseFail stream
-        handle (ParseFail left) [x:xs] stream = handle (x stream) xs stream
+        handleChainParsingHelperResult :: (ParseResult Token) [Char] [[Char] -> (ParseResult Token)] [[Char] -> (ParseResult Token)] -> (ParseResult Token)
+        handleChainParsingHelperResult (ParseOk rs left) _ _ _                 = ParseOk rs left
+        handleChainParsingHelperResult (ParseFail _) stream parsersLeft origin = chainParsingHelper stream parsersLeft origin
+
+        handleChainParsingResult :: (ParseResult Token) [[Char] -> (ParseResult Token)] [Char] -> (ParseResult Token)
+        handleChainParsingResult (ParseOk rs left) _ _          = ParseOk rs left
+        handleChainParsingResult (ParseFail left) [] stream     = ParseFail stream
+        handleChainParsingResult (ParseFail left) [x:xs] stream = handleChainParsingResult (x stream) xs stream
+    filterComment :: [Char] -> [Char]
+    filterComment ['%':xs] = untilCr xs
+    filterComment x        = x
+    where
+        untilCr :: [Char] -> [Char]
+        untilCr [] = []
+        untilCr [x:xs]
+            | x == '\n' = xs
+            | otherwise = untilCr xs
+
 
 
 instance toTokens [Char] where
