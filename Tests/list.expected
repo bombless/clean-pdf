@@ -1,1 +1,1 @@
-[ListStart, Number(1), ListEnd]
+[ListStart, Bool(True), Bool(False), Null, Number(1), Number(2), ListEnd]

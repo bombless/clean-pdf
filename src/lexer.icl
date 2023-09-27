@@ -38,9 +38,11 @@ where
     chainParsing :: [Char] [[Char] -> (ParseResult Token)] -> (ParseResult Token)
     chainParsing stream parsers = chainParsingHelper stream parsers parsers
     chainParsingHelper :: [Char] [[Char] -> (ParseResult Token)] [[Char] -> (ParseResult Token)] -> (ParseResult Token)
-    chainParsingHelper stream [x:xs] origin
-        | x == ' '  = chainParsingHelper (filterComment stream) xs origin
-        | otherwise = handleChainParsingHelperResult (x (filterComment stream)) stream xs origin
+    chainParsingHelper [] _ _ = ParseFail []
+    chainParsingHelper _ [] _ = ParseFail []
+    chainParsingHelper [streamHead:streamTail] [x:xs] origin
+        | streamHead == ' '  = chainParsingHelper (filterComment streamTail) [x:xs] origin
+        | otherwise = handleChainParsingHelperResult (x (filterComment [streamHead:streamTail])) [streamHead:streamTail] xs origin
     where
         handleChainParsingHelperResult :: (ParseResult Token) [Char] [[Char] -> (ParseResult Token)] [[Char] -> (ParseResult Token)] -> (ParseResult Token)
         handleChainParsingHelperResult (ParseOk rs left) _ _ _                 = ParseOk rs left
@@ -50,15 +52,14 @@ where
         handleChainParsingResult (ParseOk rs left) _ _          = ParseOk rs left
         handleChainParsingResult (ParseFail left) [] stream     = ParseFail stream
         handleChainParsingResult (ParseFail left) [x:xs] stream = handleChainParsingResult (x stream) xs stream
+    untilCr :: [Char] -> [Char]
+    untilCr [] = []
+    untilCr [x:xs]
+        | x == '\n' = xs
+        | otherwise = untilCr xs
     filterComment :: [Char] -> [Char]
     filterComment ['%':xs] = untilCr xs
     filterComment x        = x
-    where
-        untilCr :: [Char] -> [Char]
-        untilCr [] = []
-        untilCr [x:xs]
-            | x == '\n' = xs
-            | otherwise = untilCr xs
 
 
 
