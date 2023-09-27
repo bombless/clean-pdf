@@ -23,7 +23,8 @@ toTokensImpl stream =
             match "xref" XRef,
             match "null" Null,
             match "true" (Bool True),
-            match "false" (Bool False)
+            match "false" (Bool False),
+            parseKey
         ]
 where
     match :: {#Char} Token -> ([Char] -> (ParseResult Token))
@@ -60,7 +61,15 @@ where
     filterComment :: [Char] -> [Char]
     filterComment ['%':xs] = untilCr xs
     filterComment x        = x
-
+    parseKey :: [Char] -> ParseResult Token
+    parseKey ['/':xs] = parseKeyHelper xs []
+    parseKey _        = ParseFail []
+    parseKeyHelper :: [Char] [Char] -> (ParseResult Token)
+    parseKeyHelper [] acc = ParseOk (Key acc) []
+    parseKeyHelper [' ':xs] acc = ParseOk (Key acc) xs
+    parseKeyHelper ['<':xs] acc = ParseOk (Key acc) ['<':xs]
+    parseKeyHelper ['[':xs] acc = ParseOk (Key acc) ['[':xs]
+    parseKeyHelper [x:xs] acc   = parseKeyHelper xs (acc ++ [x])
 
 
 instance toTokens [Char] where
@@ -82,7 +91,7 @@ instance toTokens {#Char} where
 
 instance toString Token where
     toString (StringLiteral _) = "StringLiteral"
-    toString (Key _)           = "Key"
+    toString (Key s)           = "/" +++ toString s
     toString DictStart         = "DictStart"
     toString DictEnd           = "DictEnd"
     toString ListStart         = "ListStart"

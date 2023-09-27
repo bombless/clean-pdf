@@ -47,3 +47,13 @@ tests:
           print_time: false
       - Tests/output/list
     expected_result: Tests/list.expected
+  keys:
+    script:
+      - clm:
+          main: keys
+          target: Tests/output/keys
+          src: [Tests]
+          print_constructors: false
+          print_time: false
+      - Tests/output/keys
+    expected_result: Tests/keys.expected
