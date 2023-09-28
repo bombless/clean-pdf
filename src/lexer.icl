@@ -24,7 +24,8 @@ toTokensImpl stream =
             match "null" Null,
             match "true" (Bool True),
             match "false" (Bool False),
-            parseKey
+            parseKey,
+            parseStringLiteral
         ]
 where
     match :: {#Char} Token -> ([Char] -> (ParseResult Token))
@@ -70,6 +71,12 @@ where
     parseKeyHelper ['<':xs] acc = ParseOk (Key acc) ['<':xs]
     parseKeyHelper ['[':xs] acc = ParseOk (Key acc) ['[':xs]
     parseKeyHelper [x:xs] acc   = parseKeyHelper xs (acc ++ [x])
+    parseStringLiteral :: [Char] -> ParseResult Token
+    parseStringLiteral ['(':xs] = parseStringLiteralHelper xs []
+    parseStringLiteral _        = ParseFail []
+    parseStringLiteralHelper :: [Char] [Char] -> (ParseResult Token)
+    parseStringLiteralHelper ['\\':x:xs] acc = parseStringLiteralHelper xs (acc ++ [x])
+    parseStringLiteralHelper [')':xs] acc = ParseOk (StringLiteral acc) xs
 
 
 instance toTokens [Char] where
